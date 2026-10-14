@@ -1,0 +1,52 @@
+        -:    0:Source:/home/cobra/dev/TSM_PicoW_Blinky/src/application.c
+        -:    0:Graph:build/Debug/srcLib/CMakeFiles/srcLib.dir/application.c.gcno
+        -:    0:Data:build/Debug/srcLib/CMakeFiles/srcLib.dir/application.c.gcda
+        -:    0:Runs:0
+        -:    1:/*
+        -:    2: * Copyright (c) 2023-2024, Erich Styger
+        -:    3: *
+        -:    4: * SPDX-License-Identifier: BSD-3-Clause
+        -:    5: */
+        -:    6:
+        -:    7:#include "platform.h"
+        -:    8:#include "application.h"
+        -:    9:#include "McuRTOS.h"
+        -:   10:#include "McuLog.h"
+        -:   11:#include "McuUtility.h"
+        -:   12:#include "McuLED.h"
+        -:   13:#include "leds.h"
+        -:   14:#include <stdio.h>
+        -:   15:
+    #####:   16:static void AppTask(void *pv) {
+    #####:   17:  int count = 0;
+        -:   18:#if PL_CONFIG_USE_PICO_W && PL_CONFIG_USE_LEDS
+    #####:   19:  Leds_InitFromTask(); /* needed for the on-board Pico-W LED */
+        -:   20:#endif
+    #####:   21:  for(;;) {
+    #####:   22:    count++;
+        -:   23:    #if PL_CONFIG_USE_LEDS
+    #####:   24:    Leds_Neg(LEDS_ONBOARD);
+        -:   25:    #endif
+    #####:   26:    vTaskDelay(pdMS_TO_TICKS(1000));
+        -:   27:    #if PL_CONFIG_USE_GCOV
+    #####:   28:    if (count>5) {
+    #####:   29:      vTaskEndScheduler();
+        -:   30:    }
+        -:   31:    #endif
+        -:   32:  }
+        -:   33:}
+        -:   34:
+    #####:   35:void App_Init(void) {
+    #####:   36:  if (xTaskCreate(
+        -:   37:      AppTask,  /* pointer to the task */
+        -:   38:      "App", /* task name for kernel awareness debugging */
+        -:   39:      1500/sizeof(StackType_t), /* task stack size */
+        -:   40:      (void*)NULL, /* optional task startup argument */
+        -:   41:      tskIDLE_PRIORITY+2,  /* initial priority */
+        -:   42:      (TaskHandle_t*)NULL /* optional task handle to create */
+        -:   43:    ) != pdPASS)
+        -:   44:  {
+    #####:   45:    McuLog_fatal("Failed creating task");
+    #####:   46:    for(;;){} /* error! probably out of memory */
+        -:   47:  }
+    #####:   48:}
